@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Bot</title>
+</head>
+<body>
+    <h1>Facebook Bot</h1>
+    <form id="userForm">
+        <label for="userId">Enter Facebook User ID:</label>
+        <input type="text" id="userId" name="userId">
+        <button type="button" onclick="getUserInfo()">Get User Info</button>
+    </form>
+    <div id="userInfo"></div>
+
+    <script>
+        async function getUserInfo() {
+            const userId = document.getElementById('userId').value;
+            const accessToken = 'YOUR_FACEBOOK_ACCESS_TOKEN';
+
+            try {
+                const response = await fetch(`https://graph.facebook.com/v12.0/${userId}?fields=id,name,email,gender&access_token=${accessToken}`);
+                const userData = await response.json();
+                
+                // Display user information
+                document.getElementById('userInfo').innerHTML = `
+                    <h2>User Information</h2>
+                    <p><strong>ID:</strong> ${userData.id}</p>
+                    <p><strong>Name:</strong> ${userData.name}</p>
+                    <p><strong>Email:</strong> ${userData.email || 'N/A'}</p>
+                    <p><strong>Gender:</strong> ${userData.gender || 'N/A'}</p>
+                `;
+            } catch (error) {
+                console.error('Error fetching user information:', error);
+                document.getElementById('userInfo').innerHTML = '<p>Error fetching user information. Please try again later.</p>';
+            }
+        }
+    </script>
+</body>
+</html>
