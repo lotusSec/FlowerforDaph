@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TikTok Share Bot</title>
+</head>
+<body>
+
+<script>
+// Define the TikTok class
+class TikTok {
+    constructor() {
+        this.added = 0;
+        this.lock = new threading.Lock();
+        this.amount = parseInt(prompt('Desired Amount of Shares:'));
+        this.video_id = prompt('TikTok URL:').split('/')[5];
+    }
+
+    status(code, intention) {
+        if (code === 200) {
+            this.added += 1;
+        } else {
+            this.lock.acquire();
+            console.log(`Error: ${intention} | Status Code: ${code}`);
+            this.lock.release();
+        }
+    }
+
+    updateTitle() {
+        while (this.added === 0) {
+            sleep(0.2);
+        }
+        while (this.added < this.amount) {
+            const timeRemaining = (new Date().getTime() - this.startTime) / this.added * (this.amount - this.added);
+            document.title = `[TikTok Shares Botter] - Added: ${this.added}/${this.amount} (${((this.added / this.amount) * 100).toFixed(3)}%) | Time Remaining: ${timeRemaining}`;
+            sleep(200);
+        }
+        document.title = `[TikTok Shares Botter] - Added: ${this.added}/${this.amount} (${((this.added / this.amount) * 100).toFixed(3)}%) | Time Remaining: 00:00:00`;
+    }
+
+    bot() {
+        const actionTime = Math.round(new Date().getTime() / 1000);
+        const installId = Math.floor(Math.random() * 10000000000000000000).toString();
+
+        const data = `action_time=${actionTime}&item_id=${this.video_id}&item_type=1&share_delta=1&stats_channel=copy`;
+        const headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'x-common-params-v2': `version_code=16.6.5&app_name=musical_ly&channel=App%20Store&device_id=${installId}&aid=1233&os_version=13.5.1&device_platform=iphone&device_type=iPhone10,5`
+        };
+
+        fetch('https://api16-core-c-useast1a.tiktokv.com/aweme/v1/aweme/stats/?ac=WIFI&op_region=SE&app_skin=white&', {
+            method: 'POST',
+            headers: headers,
+            body: data
+        })
+        .then(response => response.text())
+        .then(data => {
+            if (!data.includes('Service Unavailable')) {
+                this.status(response.status, response.text);
+            }
+        })
+        .catch(error => console.error(`Error: ${error}`));
+    }
+
+    multiThreading() {
+        this.startTime = new Date().getTime();
+        setInterval(this.updateTitle.bind(this), 200);
+
+        for (let i = 0; i < this.amount; i++) {
+            setTimeout(this.bot.bind(this), 0);
+        }
+    }
+}
+
+// Create an instance of the TikTok class and start multi-threading
+const main = new TikTok();
+main.multiThreading();
+</script>
+
+</body>
+</html>
